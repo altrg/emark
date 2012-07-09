@@ -103,14 +103,14 @@ perform_benchmark(Config, Modules) ->
 
   case Filename of
     Filename when is_list(Filename) ->
-      %% load previous report
-      Previous = emark_report:from_file(Filename),
       %% dump to file
       emark_report:to_file(EmarkResult, Filename),
       %% dump diff
       case ShowDiff of
-        true when is_list(Previous) ->
-          io:format("~n"),
+        true ->
+          %% load previous report
+          Previous = emark_report:from_file(Filename),
+          %% print the difference
           emark_report:show_diff(Previous, EmarkResult);
 
         _ ->

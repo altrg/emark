@@ -34,12 +34,14 @@ from_file(Filename) ->
         lists:map(F, Keys);
 
       nomatch ->
-        { error, invalid_report }
+        rebar_log:log(warn, "invalid previous report~n", []),
+        []
     end
 
   catch
     _:_ ->
-      { error, failed }
+      rebar_log:log(warn, "failed to read previous report~n", []),
+      []
   end.
 
 %% @doc Save report to a file.
@@ -60,6 +62,8 @@ to_string(Report) ->
   lists:flatmap(F, Report).
 
 %% @doc Dump difference between two reports to stdout.
+show_diff([], []) ->
+  ok;
 show_diff(Old0, New0) ->
   Map = fun(Mark, List) ->
             L = lists:map(fun({ F, A, _C, T0 }) ->
@@ -99,7 +103,7 @@ diff_to_stdout(Diff) ->
 
   NA = "n/a",
 
-  io:format(?fmt_func ?fmt_na ?fmt_na ?fmt_delta,
+  io:format("~n" ?fmt_func ?fmt_na ?fmt_na ?fmt_delta,
             [ "benchmark", "old us/op", "new us/op", "delta" ]),
 
   lists:foreach(fun({ Func, { T, new } }) ->
