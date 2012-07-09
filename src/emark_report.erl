@@ -13,6 +13,7 @@
 -define(fmt_time,  "~14.1f"). % us
 -define(fmt_na,    "~14s").   % "n/a"
 -define(fmt_delta, "~14s~n"). % delta
+-define(fmt_iter,  "~14B").   % number of iterations
 
 %% @doc Load report from a file.
 from_file(Filename) ->
@@ -27,7 +28,7 @@ from_file(Filename) ->
             }
         end,
 
-    case re:run(Data, "\([^/]+\)/([0-9]+)\t([^ \t]+)\t([^ \t]+)[^\n]+\n",
+    case re:run(Data, "\([^/]+\)/([0-9]+)[ ]+([^ ]+)[ ]+([^ ]+)[^\n]+\n",
                 [ global, { capture, [ 1, 2, 3, 4 ], list }, unicode ]) of
       { match, Keys } ->
         lists:map(F, Keys);
@@ -52,8 +53,8 @@ to_stdout(Report) ->
 %% @doc Convert report into a readable form.
 to_string(Report) ->
   F = fun({ Func, Arity, Count, Average }) ->
-          io_lib:format("~p/~p\t~p\t~.1f us/op~n",
-                        [ Func, Arity, Count, Average ])
+          io_lib:format(?fmt_func ?fmt_iter ?fmt_time " us/op~n",
+                        [ func_to_string(Func, Arity), Count, Average ])
       end,
 
   lists:flatmap(F, Report).
@@ -62,8 +63,7 @@ to_string(Report) ->
 show_diff(Old0, New0) ->
   Map = fun(Mark, List) ->
             L = lists:map(fun({ F, A, _C, T0 }) ->
-                              Key = lists:flatten(io_lib:format("~p/~B",
-                                                                [ F, A ])),
+                              Key = func_to_string(F, A),
                               T = trunc(T0 * 10.0) / 10.0,
                               { Key, { T, Mark } }
                           end,
@@ -83,6 +83,9 @@ show_diff(Old0, New0) ->
   diff_to_stdout(Diff).
 
 %===============================================================================
+
+func_to_string(F, A) ->
+  atom_to_list(F) ++ "/" ++ integer_to_list(A).
 
 diff_to_stdout(Diff) ->
   Delta = fun(X, Y) ->
