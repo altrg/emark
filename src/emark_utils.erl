@@ -55,7 +55,7 @@ floor_10(X) ->
 
 %% @doc Get function suffix ("_benchmark") from emark options.
 fun_suffix(Options) ->
-  proplists:get_value(emark_fun_suffix, Options, ?DEFAULT_FUN_SUFFIX).
+  proplists:get_value(fun_suffix, Options, ?DEFAULT_FUN_SUFFIX).
 
 %%% Local Variables:
 %%% erlang-indent-level: 2
