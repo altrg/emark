@@ -6,6 +6,19 @@ Lightweight benchmarking framework for Erlang.
 It is a plugin for [rebar](https://github.com/basho/rebar) which
 benchmarks your code.
 
+What it looks like
+==================
+
+```
+==> bench0 (emark)
+calc_something/0	20000	38.1 µs/op
+parse_omg_wtf/1	500000	1.6 µs/op
+
+benchmark                      old µs/op new µs/op   delta
+calc_something/0                    37.7      38.0  +0.79%
+parse_omg_wtf/1                      1.6       1.5  -6.67%
+```
+
 Usage example
 =============
 
