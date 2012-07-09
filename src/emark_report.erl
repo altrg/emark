@@ -78,3 +78,7 @@ show_diff(Old0, New0) ->
             [ "benchmark", "old µs/op", "new µs/op", "delta" ]),
   lists:zipwith(Cmp, Old, New),
   ok.
+
+%%% Local Variables:
+%%% erlang-indent-level: 2
+%%% End:

@@ -21,3 +21,7 @@ parse_transform(Forms, Options) ->
       end,
 
   lists:reverse(lists:foldl(F, [], Forms)).
+
+%%% Local Variables:
+%%% erlang-indent-level: 2
+%%% End:

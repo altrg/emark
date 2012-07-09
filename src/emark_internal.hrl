@@ -28,3 +28,7 @@
 -define(BENCH_DEFAULT_SHOW_DIFF, true).
 
 -endif. % !EMARK_INTERNAL_HRL
+
+%%% Local Variables:
+%%% erlang-indent-level: 2
+%%% End:

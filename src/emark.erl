@@ -31,3 +31,7 @@ start({ _M, _F, _A } = MFA) ->
                ok | no_return().
 start(M, F, A) ->
   start({ M, F, A }).
+
+%%% Local Variables:
+%%% erlang-indent-level: 2
+%%% End:
