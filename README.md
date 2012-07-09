@@ -22,9 +22,7 @@ parse_omg_wtf/1                      1.6       1.5  -6.67%
 Usage example
 =============
 
-There is an example in `examples/bench0` subdirectory. You need to
-create a symbolic link to **emark**, because Spawnfest's repo is (or
-could be) private.
+There is an example in `examples/bench0` subdirectory.
 
     cd examples/bench0
     mkdir -p deps
