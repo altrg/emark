@@ -15,8 +15,8 @@
 %% default number of iterations per function
 -define(BENCH_DEFAULT_N, 1000).
 
-%% default benchmark time -- 0.5 second
--define(BENCH_DEFAULT_TIME, 500000).
+%% default benchmark duration -- 0.5 second
+-define(BENCH_DEFAULT_DURATION, 500000).
 
 %% report to stdout by default
 -define(BENCH_DEFAULT_REPORT_STDOUT, true).
