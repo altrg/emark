@@ -64,7 +64,7 @@ trace(B, N) ->
               MFA = { function, { _, _, _ } } ->
                 Self ! MFA
             end,
-            %% send the time when benchmark was REALLY started
+            %% send the real timings
             receive
               { started, StartReal } ->
                 Self ! { finished, Time - timer:now_diff(StartReal, StartTime) }
