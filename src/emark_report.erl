@@ -8,6 +8,12 @@
         , show_diff/2
         ]).
 
+%% format strings
+-define(fmt_func,  "~-32s").  % function/arity
+-define(fmt_time,  "~14.1f"). % us
+-define(fmt_na,    "~14s").   % "n/a"
+-define(fmt_delta, "~14s~n"). % delta
+
 %% @doc Load report from a file.
 from_file(Filename) ->
   try
@@ -46,7 +52,7 @@ to_stdout(Report) ->
 %% @doc Convert report into a readable form.
 to_string(Report) ->
   F = fun({ Func, Arity, Count, Average }) ->
-          io_lib:format("~p/~p\t~p\t~.1f µs/op~n",
+          io_lib:format("~p/~p\t~p\t~.1f us/op~n",
                         [ Func, Arity, Count, Average ])
       end,
 
@@ -54,30 +60,56 @@ to_string(Report) ->
 
 %% @doc Dump difference between two reports to stdout.
 show_diff(Old0, New0) ->
-  Old = lists:sort(Old0),
-  New = lists:sort(New0),
+  Map = fun(Mark, List) ->
+            L = lists:map(fun({ F, A, _C, T0 }) ->
+                              Key = lists:flatten(io_lib:format("~p/~B",
+                                                                [ F, A ])),
+                              T = trunc(T0 * 10.0) / 10.0,
+                              { Key, { T, Mark } }
+                          end,
+                          List),
+            dict:from_list(L)
+        end,
 
+  Old = Map(old, Old0),
+  New = Map(new, New0),
+
+  Diff = dict:merge(fun(_Key, { OldT, old }, { NewT, new }) ->
+                        { OldT, NewT }
+                    end,
+                    Old,
+                    New),
+
+  diff_to_stdout(Diff).
+
+%===============================================================================
+
+diff_to_stdout(Diff) ->
   Delta = fun(X, Y) ->
-              Diff = 100 * (1.0 - (X / Y)),
+              Change = 100 * (1.0 - (X / Y)),
               io_lib:format(case X > Y of
                               true  -> "~.2f%";
                               false -> "+~.2f%"
                             end,
-                            [ Diff ])
+                            [ Change ])
           end,
 
-  Cmp = fun({ F, A, _OldC, OldT }, { F, A, _NewC, NewT }) ->
-            X = trunc(OldT * 10.0) / 10.0,
-            Y = trunc(NewT * 10.0) / 10.0,
-            Func = lists:flatten(io_lib:format("~p/~B", [ F, A ])),
-            io:format("~-30s\t~10.1f\t~10.1f\t~8s~n",
-                      [ Func, X, Y, Delta(X, Y) ])
-        end,
+  NA = "n/a",
 
-  io:format("~-30s\t~11s\t~11s\t~8s~n",
-            [ "benchmark", "old µs/op", "new µs/op", "delta" ]),
-  lists:zipwith(Cmp, Old, New),
-  ok.
+  io:format(?fmt_func ?fmt_na ?fmt_na ?fmt_delta,
+            [ "benchmark", "old us/op", "new us/op", "delta" ]),
+
+  lists:foreach(fun({ Func, { T, new } }) ->
+                    io:format(?fmt_func ?fmt_na ?fmt_time ?fmt_delta,
+                              [ Func, NA, T, NA ]);
+                   ({ Func, { T, old } }) ->
+                    io:format(?fmt_func ?fmt_time ?fmt_na ?fmt_delta,
+                              [ Func, T, NA, NA ]);
+                   ({ Func, { OldT, NewT }}) ->
+                    io:format(?fmt_func ?fmt_time ?fmt_time ?fmt_delta,
+                              [ Func, OldT, NewT, Delta(OldT, NewT) ])
+                end,
+                lists:sort(dict:to_list(Diff))).
 
 %%% Local Variables:
 %%% erlang-indent-level: 2
