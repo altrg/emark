@@ -6,6 +6,7 @@
         , exports_of_forms/1
         , exports_of_forms/2
         , fun_suffix/1
+        , options/2
         ]).
 
 -include("emark_internal.hrl").
@@ -55,7 +56,18 @@ floor_10(X) ->
 
 %% @doc Get function suffix ("_benchmark") from emark options.
 fun_suffix(Options) ->
-  proplists:get_value(fun_suffix, Options, ?DEFAULT_FUN_SUFFIX).
+  [ Suffix ] = options(Options,
+                       [ { fun_suffix, ?DEFAULT_FUN_SUFFIX } ]),
+  Suffix.
+
+%% @doc Get specific values from a key-value list.
+-spec options(list({ atom(), any() }), list({ atom(), any() })) ->
+                 list(any()).
+options(Input, Options) ->
+  lists:map(fun({ Option, Default }) ->
+                proplists:get_value(Option, Input, Default)
+            end,
+            Options).
 
 %%% Local Variables:
 %%% erlang-indent-level: 2

@@ -89,13 +89,11 @@ perform_benchmark(Config, Modules) ->
   [ ReportStdout
   , Filename
   , ShowDiff
-  ] = lists:map(fun({ Opt, Default }) ->
-                    proplists:get_value(Opt, EmarkOpts, Default)
-                end,
-                [ { report_stdout, ?BENCH_DEFAULT_REPORT_STDOUT }
-                , { report_file,   ?BENCH_DEFAULT_REPORT_FILE   }
-                , { show_diff,     ?BENCH_DEFAULT_SHOW_DIFF     }
-                ]),
+  ] = emark_utils:options(EmarkOpts,
+                          [ { report_stdout, ?BENCH_DEFAULT_REPORT_STDOUT }
+                          , { report_file,   ?BENCH_DEFAULT_REPORT_FILE   }
+                          , { show_diff,     ?BENCH_DEFAULT_SHOW_DIFF     }
+                          ]),
 
   %% dump to stdout
   case ReportStdout of

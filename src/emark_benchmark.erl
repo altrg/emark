@@ -9,7 +9,10 @@
 
 %% @doc Benchmark a specific modules.
 run(Modules, Options) ->
-  N = proplists:get_value(n, Options, ?BENCH_DEFAULT_N),
+  [ N
+  ] = emark_utils:options(Options,
+                          [ { n, ?BENCH_DEFAULT_N }
+                          ]),
 
   RunModule = fun(M) ->
                   rebar_log:log(debug,
