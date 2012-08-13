@@ -18,29 +18,11 @@ emark(Config, _AppFile) ->
   true = code:add_patha(emark_dir()),
   true = code:add_pathz(ebin_dir()),
 
-  %% copy source files to ?EMARK_DIR
-  SrcDirs = rebar_config:get_list(Config, src_dirs, [ "src" ]),
-  SrcErls = lists:foldl(fun(Dir, Accu) ->
-                            Files = rebar_utils:find_files(Dir, ".*\\.erl\$"),
-                            Accu ++ Files
-                        end,
-                        [],
-                        SrcDirs),
-
-  ToCleanUp = fun(F, Accu) ->
-                  F2 = filename:basename(F),
-                  F3 = filename:join([ ?EMARK_DIR, F2 ]),
-                  case filelib:is_regular(F3) of
-                    true  -> [ F3 | Accu ];
-                    false -> Accu
-                  end
-              end,
-
-  ok = rebar_file_utils:delete_each(lists:foldl(ToCleanUp, [], SrcErls)),
-  ok = rebar_file_utils:cp_r(SrcErls, ?EMARK_DIR),
-
-  %% compile with -DBENCHMARK
-  rebar_erlc_compiler:doterl_compile(emark_config(Config), ?EMARK_DIR, SrcErls),
+  %% compile
+  case erlang:function_exported(rebar_erlc_compiler, doterl_compile, 3) of
+    true -> compile_rebar_v2(Config);
+    false -> compile_rebar_v3(Config)
+  end,
 
   Beams = rebar_utils:beams(?EMARK_DIR),
   Modules = [ rebar_utils:beam_to_mod(?EMARK_DIR, B) || B <- Beams ],
@@ -123,6 +105,42 @@ perform_benchmark(Config, Modules) ->
 
   ok = file:set_cwd(Cwd),
   EmarkResult.
+
+%% @doc Compile for rebar v2.x.x
+-spec compile_rebar_v2(rebar_config:config()) -> ok.
+compile_rebar_v2(Config) ->
+  %% copy source files to ?EMARK_DIR
+  SrcDirs = rebar_config:get_list(Config, src_dirs, [ "src" ]),
+  SrcErls = lists:foldl(fun(Dir, Accu) ->
+                            Files = rebar_utils:find_files(Dir, ".*\\.erl\$"),
+                            Accu ++ Files
+                        end,
+                        [],
+                        SrcDirs),
+
+  ToCleanUp = fun(F, Accu) ->
+                  F2 = filename:basename(F),
+                  F3 = filename:join([ ?EMARK_DIR, F2 ]),
+                  case filelib:is_regular(F3) of
+                    true  -> [ F3 | Accu ];
+                    false -> Accu
+                  end
+              end,
+
+  ok = rebar_file_utils:delete_each(lists:foldl(ToCleanUp, [], SrcErls)),
+  ok = rebar_file_utils:cp_r(SrcErls, ?EMARK_DIR),
+
+  %% compile with -DBENCHMARK
+  rebar_erlc_compiler:doterl_compile(emark_config(Config), ?EMARK_DIR, SrcErls).
+
+%% @doc Compile for rebar v3.x.x
+-spec compile_rebar_v3(rebar_config:config()) -> ok.
+compile_rebar_v3(Config) ->
+  %% need to set target dir for test_compile()
+  Conf = rebar_config:set(emark_config(Config),
+                          test_compile_opts,
+                          [{src_dirs, ["src"]}]),
+  rebar_erlc_compiler:test_compile(Conf, "emark", ?EMARK_DIR).
 
 %%% Local Variables:
 %%% erlang-indent-level: 2
