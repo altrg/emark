@@ -139,7 +139,7 @@ compile_rebar_v3(Config) ->
   %% need to set target dir for test_compile()
   Conf = rebar_config:set(emark_config(Config),
                           test_compile_opts,
-                          [{src_dirs, ["src"]}]),
+                          [ { src_dirs, [ "src" ] } ]),
   rebar_erlc_compiler:test_compile(Conf, "emark", ?EMARK_DIR).
 
 %%% Local Variables:
