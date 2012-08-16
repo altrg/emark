@@ -26,8 +26,8 @@ emark(Config, _AppFile) ->
 
   Beams = rebar_utils:beams(?EMARK_DIR),
   Modules = [ rebar_utils:beam_to_mod(?EMARK_DIR, B) || B <- Beams ],
-
-  perform_benchmark(Config, Modules),
+  FilteredModules = filter_suites(Config, Modules),
+  perform_benchmark(Config, FilteredModules),
 
   %% restore code path
   true = code:set_path(CodePath),
@@ -141,6 +141,17 @@ compile_rebar_v3(Config) ->
                           test_compile_opts,
                           [ { src_dirs, [ "src" ] } ]),
   rebar_erlc_compiler:test_compile(Conf, "emark", ?EMARK_DIR).
+
+%% @doc suites= filter
+filter_suites(Config, Modules) ->
+    RawSuites = rebar_config:get_global(Config, suites, ""),
+    Suites = [list_to_atom(Suite) || Suite <- string:tokens(RawSuites, ",")],
+    filter_suites1(Modules, Suites).
+
+filter_suites1(Modules, []) ->
+    Modules;
+filter_suites1(Modules, Suites) ->
+    [M || M <- Modules, lists:member(M, Suites)].
 
 %%% Local Variables:
 %%% erlang-indent-level: 2
