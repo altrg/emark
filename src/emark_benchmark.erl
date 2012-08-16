@@ -27,6 +27,10 @@ run(Modules, Options) ->
               end,
 
   F = fun(M) ->
+          %% module may be already loaded in rebar chain (ex. ..eunit emark..),
+          %% so try to unload this module first
+          %% @TODO soft_purge/1, wait for processes lingering in module
+          code:purge(M),
           { module, M } = code:load_file(M),
           case erlang:function_exported(M, benchmark, 0) of
             true ->
